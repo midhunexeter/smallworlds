@@ -248,3 +248,5 @@ blockquote {
   border-radius: 3px;
   color: #e8e4da;
 }
+
+.sim select:disabled { opacity: 0.4; cursor: not-allowed; }

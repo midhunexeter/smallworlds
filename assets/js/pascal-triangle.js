@@ -28,6 +28,7 @@
   const C = {
     peg: 'rgba(232, 228, 218, 0.8)',
     pegHit: '#e2c891',
+    pegOff: 'rgba(232, 228, 218, 0.18)',
     number: 'rgba(201, 169, 110, 0.95)',
     ball: '#c9a96e',
     ballLight: '#f6e7c1',
@@ -41,10 +42,11 @@
   const CAPTIONS = {
     up: 'Classic: every number counts the routes from the top to that peg. ' +
         'These are the numbers of Pascal\u2019s triangle, and the balls pile up in the same proportions.',
-    down: 'Upside down: balls enter anywhere along the wide top and are funnelled to a single point. ' +
-          'Each number now counts the routes from that peg down to the bottom \u2014 Pascal\u2019s triangle read from the other end.',
-    diamond: 'Both ways: the triangle opens, then closes. Every peg is still the sum of the two above it; ' +
-             'the rule never changes, only the walls do.'
+    down: 'Upside down: balls are dropped anywhere along the wide top, and the board narrows as they fall. ' +
+          'A ball that bounces past the edge simply falls off. Every peg has two pegs above it, ' +
+          'so the routes double each row \u2014 and the pile below comes out flat.',
+    diamond: 'Both ways: the triangle opens, then closes. While it widens no ball can escape; ' +
+             'once it starts to narrow, balls fall off the sides.'
   };
 
   let W = 0, H = 0;
@@ -72,11 +74,20 @@
     return w;
   }
 
-  // Pegs a ball can move to from peg k in row r
-  function nextOptions(widths, r, k) {
-    const n = widths[r + 1];
-    const opts = widths[r + 1] > widths[r] ? [k, k + 1] : [k - 1, k];
-    return opts.filter((j) => j >= 0 && j < n);
+  // Positions are measured in half peg-spacings from the centre line, so a
+  // bounce moves a ball one unit left or right. Row r has a peg at x only if x
+  // lies inside the row and lines up with it; otherwise the ball is off the
+  // board there and falls straight down. There are no walls.
+  function pegIndex(w, x) {
+    if (Math.abs(x) > w - 1 || (x + w - 1) % 2 !== 0) return -1;
+    return (x + w - 1) / 2;
+  }
+
+  // Where balls are dropped: above the single top peg, or, when the top row
+  // is wide (upside down), above any of its pegs with equal chance
+  function entries(widths) {
+    const w = widths[0];
+    return Array.from({ length: w }, (_, k) => -(w - 1) + 2 * k);
   }
 
   function build() {
@@ -89,69 +100,74 @@
 
     const widths = rowWidths(shape, R);
     const rows = widths.length;
-    const lastW = widths[rows - 1];
-    const binsN = lastW + 1;
-    const maxW = Math.max(...widths, binsN);
+    const maxW = Math.max(...widths);
+    const M = maxW + rows + 1;            // offset so array indices stay positive
+    const ent = entries(widths);
+
+    // Follow the chances (p) and the number of routes (n) row by row
+    let p = new Array(2 * M + 1).fill(0);
+    let n = new Array(2 * M + 1).fill(0);
+    for (const x of ent) { p[x + M] += 1 / ent.length; n[x + M] += 1; }
+    const paths = widths.map((w) => new Array(w).fill(0));
+    for (let r = 0; r < rows; r++) {
+      const q = new Array(2 * M + 1).fill(0);
+      const m = new Array(2 * M + 1).fill(0);
+      for (let i = 0; i < p.length; i++) {
+        if (!p[i]) continue;
+        const k = pegIndex(widths[r], i - M);
+        if (k >= 0) {
+          paths[r][k] += n[i];
+          q[i - 1] += p[i] / 2; q[i + 1] += p[i] / 2;
+          m[i - 1] += n[i];     m[i + 1] += n[i];
+        } else {
+          q[i] += p[i];         // off the board: falls straight down
+          m[i] += n[i];
+        }
+      }
+      p = q; n = m;
+    }
+
+    // Bins wherever a ball can land
+    const binXs = [];
+    const expected = [];
+    for (let i = 0; i < p.length; i++) {
+      if (p[i] > 1e-12) { binXs.push(i - M); expected.push(p[i]); }
+    }
+    let gap = 2;
+    for (let i = 1; i < binXs.length; i++) gap = Math.min(gap, binXs[i] - binXs[i - 1]);
+    const reach = Math.max(maxW - 1, ...binXs.map(Math.abs)) + 1;
 
     const topPad = 50;
     const binH = H * 0.24;
     const latticeH = H - topPad - binH - 50;
-    let dx = (W * 0.88) / maxW;
+    let dx = (W * 0.9) / reach;
     dx = Math.min(dx, latticeH / Math.max(rows - 1, 1) / 0.866, 90);
     const dy = dx * 0.866;
     const cx = W / 2;
     const y0 = topPad + Math.max(0, (latticeH - dy * (rows - 1)) / 2);
+    const px = (x) => cx + (x * dx) / 2;
 
-    const pegs = widths.map((n, r) =>
-      Array.from({ length: n }, (_, k) => ({
-        x: cx + (k - (n - 1) / 2) * dx,
+    const pegs = widths.map((w, r) =>
+      Array.from({ length: w }, (_, k) => ({
+        x: px(-(w - 1) + 2 * k),
         y: y0 + r * dy,
+        on: paths[r][k] > 0,
         flash: 0,
         visits: 0
       }))
     );
 
-    const binTop = pegs[rows - 1][0].y + dy * 0.9;
+    const binTop = y0 + (rows - 1) * dy + dy * 0.9;
     const binBottom = H - 34;
-    const bins = Array.from({ length: binsN }, (_, b) => cx + (b - lastW / 2) * dx);
-
-    // Path counts: from the top if there is a single entry peg,
-    // otherwise from each peg down to the single exit peg.
-    const fromTop = widths[0] === 1;
-    const paths = widths.map((n) => new Array(n).fill(0));
-    if (fromTop) {
-      paths[0][0] = 1;
-      for (let r = 0; r < rows - 1; r++)
-        for (let k = 0; k < widths[r]; k++)
-          for (const j of nextOptions(widths, r, k)) paths[r + 1][j] += paths[r][k];
-    } else {
-      paths[rows - 1].fill(1);
-      for (let r = rows - 2; r >= 0; r--)
-        for (let k = 0; k < widths[r]; k++)
-          for (const j of nextOptions(widths, r, k)) paths[r][k] += paths[r + 1][j];
-    }
-
-    // Expected share of balls in each bin
-    let p = new Array(widths[0]).fill(1 / widths[0]);
-    for (let r = 0; r < rows - 1; r++) {
-      const q = new Array(widths[r + 1]).fill(0);
-      for (let k = 0; k < widths[r]; k++) {
-        const opts = nextOptions(widths, r, k);
-        for (const j of opts) q[j] += p[k] / opts.length;
-      }
-      p = q;
-    }
-    const expected = new Array(binsN).fill(0);
-    for (let k = 0; k < lastW; k++) {
-      expected[k] += p[k] / 2;
-      expected[k + 1] += p[k] / 2;
-    }
+    const bins = binXs.map(px);
+    const binIndex = new Map(binXs.map((x, i) => [x, i]));
+    const binW = (gap * dx) / 2 * 0.82;
 
     const pegR = Math.max(2, Math.min(dx * 0.07, 5));
     const ballR = Math.max(3, Math.min(dx * 0.15, 9));
 
-    board = { shape, R, widths, rows, pegs, bins, binTop, binBottom, binH,
-              dx, dy, paths, expected, pegR, ballR };
+    board = { shape, R, widths, rows, pegs, bins, binIndex, binW, binTop, binBottom,
+              dx, dy, px, y0, paths, expected, pegR, ballR, ent };
     ui.caption.textContent = CAPTIONS[shape];
   }
 
@@ -168,22 +184,21 @@
 
   function spawn() {
     const b = board;
-    const { widths, rows, pegs } = b;
-    let k = widths[0] === 1 ? 0 : Math.floor(Math.random() * widths[0]);
-    const route = [[0, k]];
-    for (let r = 0; r < rows - 1; r++) {
-      const opts = nextOptions(widths, r, k);
-      k = opts[Math.floor(Math.random() * opts.length)];
-      route.push([r + 1, k]);
-    }
-    const bin = k + (Math.random() < 0.5 ? 0 : 1);
-
+    let x = b.ent[Math.floor(Math.random() * b.ent.length)];
     const lift = b.pegR + b.ballR;
-    const pts = [{ x: pegs[0][route[0][1]].x, y: pegs[0][0].y - b.dy * 1.3, peg: null }];
-    for (const [r, kk] of route) pts.push({ x: pegs[r][kk].x, y: pegs[r][kk].y - lift, peg: [r, kk] });
-    pts.push({ x: b.bins[bin], y: b.binTop, peg: null });
-
-    balls.push({ pts, seg: 0, t: 0, x: pts[0].x, y: pts[0].y, bin });
+    const pts = [{ x: b.px(x), y: b.y0 - b.dy * 1.3, peg: null }];
+    for (let r = 0; r < b.rows; r++) {
+      const y = b.y0 + r * b.dy;
+      const k = pegIndex(b.widths[r], x);
+      if (k >= 0) {
+        pts.push({ x: b.px(x), y: y - lift, peg: [r, k] });
+        x += Math.random() < 0.5 ? -1 : 1;
+      } else {
+        pts.push({ x: b.px(x), y, peg: null });   // falling freely beside the board
+      }
+    }
+    pts.push({ x: b.px(x), y: b.binTop, peg: null });
+    balls.push({ pts, seg: 0, t: 0, x: pts[0].x, y: pts[0].y, bin: b.binIndex.get(x) });
   }
 
   function step(dt) {
@@ -246,14 +261,14 @@
     const maxCount = Math.max(...counts, 1);
     const maxExp = Math.max(...b.expected) * Math.max(total, 1);
     const scale = Math.max(maxCount, maxExp, 1);
-    const binW = b.dx * 0.82;
+    const binW = b.binW;
     const binSpan = b.binBottom - b.binTop;
 
     ctx.strokeStyle = C.rail;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(b.bins[0] - b.dx / 2, b.binBottom + 0.5);
-    ctx.lineTo(b.bins[b.bins.length - 1] + b.dx / 2, b.binBottom + 0.5);
+    ctx.moveTo(b.bins[0] - binW, b.binBottom + 0.5);
+    ctx.lineTo(b.bins[b.bins.length - 1] + binW, b.binBottom + 0.5);
     ctx.stroke();
 
     b.bins.forEach((x, i) => {
@@ -267,7 +282,7 @@
         ctx.lineTo(x + binW / 2, b.binBottom - h + 0.5);
         ctx.stroke();
       }
-      if (b.bins.length <= 16) {
+      if (binW > 16) {
         ctx.fillStyle = C.text;
         ctx.font = '11px Inter, system-ui, sans-serif';
         ctx.textAlign = 'center';
@@ -316,9 +331,9 @@
     b.pegs.forEach((row, r) => row.forEach((peg, k) => {
       ctx.beginPath();
       ctx.arc(peg.x, peg.y, b.pegR * (1 + peg.flash * 0.6), 0, Math.PI * 2);
-      ctx.fillStyle = peg.flash > 0.05 ? C.pegHit : C.peg;
+      ctx.fillStyle = !peg.on ? C.pegOff : (peg.flash > 0.05 ? C.pegHit : C.peg);
       ctx.fill();
-      if (showNums) {
+      if (showNums && peg.on) {
         ctx.fillStyle = C.number;
         ctx.font = fontSize + 'px Inter, system-ui, sans-serif';
         ctx.fillText(b.paths[r][k], peg.x, peg.y + b.pegR + 4);
