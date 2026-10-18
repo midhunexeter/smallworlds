@@ -50,15 +50,21 @@ from the top to reach it. Each number is the sum of the two above it, which is e
 how Pascal's triangle is built. Because every route is equally likely, the bins fill
 in proportion to the last row: a bell shape emerges from pure coin tosses.
 
-**Upside down.** Now balls enter anywhere along the wide top, and the walls push them
-inward until they all meet at a single peg. The numbers now count routes *from* each
-peg *down* to that point, and they are Pascal's triangle again, read from the other end.
-Watch the soft glow on the pegs, which shows how busy each peg is compared with its row:
-the outer pegs glow brightest, because the walls keep turning balls back inward.
+**Upside down.** Now the wide end is at the top and the triangle points down. Balls
+are dropped above any peg of the top row, with equal chance, and the board narrows as
+they fall. There are no walls: a ball that bounces past the edge simply falls off and
+drops straight down, so balls that start near the sides are the first to leave.
 
-**Both ways.** The triangle opens and then closes. In the first half the balls spread
-out; in the second half they are gathered back in. Each number is still the sum of the
-two above it, so the counts keep growing as the walls close, until the single peg at
-the bottom collects every route through the board.
+Every peg on this board has two pegs above it, so the number of routes doubles from
+one row to the next: 1, 2, 4, 8, and so on. And the pile below comes out flat. Every
+landing spot is equally likely, whether a ball fell off the side early or bounced all
+the way to the bottom.
+
+Watch the soft glow on the pegs, which shows how busy each peg is compared with its row.
+
+**Both ways.** The triangle opens and then closes. While it widens, no ball can
+escape and the numbers are Pascal's triangle. Once it starts to narrow, balls begin
+to fall off the sides, and only the lucky ones bounce all the way to the last peg.
+The numbers there count just those survivors.
 
 <script src="{{ '/assets/js/pascal-triangle.js' | relative_url }}"></script>
