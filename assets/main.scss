@@ -1,0 +1,147 @@
+---
+---
+
+// Elegant serif for headings, clean sans-serif for reading
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500&display=swap");
+
+// ---- Minima settings ----
+$base-font-family: "Inter", system-ui, sans-serif;
+$base-font-size:   17px;
+$base-line-height: 1.75;
+$spacing-unit:     36px;
+
+$text-color:       #e8e4da;   // warm ivory
+$background-color: #0e1424;   // deep ink navy
+$brand-color:      #c9a96e;   // muted gold
+$grey-color:       #8d95a8;
+$grey-color-light: #1c2438;
+$grey-color-dark:  #c8ccd6;
+
+$content-width:    820px;
+
+@import "minima";
+
+// ---- Refinements ----
+$gold:     $brand-color;
+$hairline: rgba(201, 169, 110, 0.28);
+
+// Quiet sky: a faint glow at the top, nothing more
+body {
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(90, 110, 170, 0.25), transparent 60%),
+    $background-color;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+// Sparse, faint stars that drift almost imperceptibly
+body::before {
+  content: "";
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 200vmax;
+  height: 200vmax;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 40px 60px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 210px 150px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 330px 40px, rgba(255,240,210,0.6), transparent),
+    radial-gradient(1px 1px at 120px 260px, rgba(255,255,255,0.4), transparent);
+  background-size: 420px 320px;
+  opacity: 0.45;
+  animation: drift 900s linear infinite;
+}
+@keyframes drift {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.site-header, .page-content, .site-footer { position: relative; z-index: 1; }
+
+// Typography
+h1, h2, h3, .page-heading, .post-list-heading, .post-title, .post-link {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 600;
+  color: #f4f1ea;
+  letter-spacing: 0.01em;
+}
+.page-heading, .post-title { font-size: 2.8rem; line-height: 1.15; }
+h2 { font-size: 1.9rem; margin-top: 2.2rem; }
+h3 { font-size: 1.45rem; }
+
+// Header: transparent with a single gold hairline
+.site-header {
+  background: transparent;
+  border-top: none;
+  border-bottom: 1px solid $hairline;
+}
+.site-title, .site-title:visited {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #f4f1ea;
+  letter-spacing: 0.04em;
+}
+.site-nav .page-link {
+  color: $grey-color-dark;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  &:hover { color: $gold; text-decoration: none; }
+}
+
+// Links: understated gold with a fine underline
+a, a:visited { color: $gold; text-decoration: none; border-bottom: 1px solid $hairline; }
+a:hover { color: #e2c891; border-bottom-color: $gold; text-decoration: none; }
+.site-title, .site-nav .page-link, .post-link { border-bottom: none; }
+
+// Post list: simple entries divided by hairlines
+.post-list { margin-left: 0; }
+.post-list > li {
+  padding: 1.4rem 0;
+  margin-bottom: 0;
+  border-bottom: 1px solid $grey-color-light;
+}
+.post-link { font-size: 1.7rem; display: inline-block; transition: color 0.2s ease; }
+.post-link:hover { color: $gold; }
+.post-meta {
+  color: $grey-color;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+// Code, images, simulation canvases
+code, pre {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid $grey-color-light;
+  color: #ece8df;
+  border-radius: 6px;
+}
+img, canvas {
+  max-width: 100%;
+  border: 1px solid $hairline;
+  border-radius: 4px;
+}
+
+// Blockquotes as quiet asides
+blockquote {
+  border-left: 2px solid $gold;
+  color: $grey-color-dark;
+  font-style: italic;
+}
+
+.rss-subscribe { display: none; }
+
+// Footer
+.site-footer {
+  border-top: 1px solid $hairline;
+  background: transparent;
+  font-size: 0.85rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+}
