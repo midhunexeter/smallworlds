@@ -13,6 +13,10 @@ parameters, pause, and reset, and explore at your own pace.
 
 ## Who makes this
 
+<img class="portrait"
+     src="https://sheffield.ac.uk/sites/default/files/styles/profile_square_lg_1x/public/2025-07/IMG_9018.JPG?h=2a927e86&amp;itok=xDp2jLJk"
+     alt="Midhun Parakkal Unni" width="160" height="160" loading="lazy">
+
 I'm Midhun Parakkal Unni, an Academic Fellow in AI for Health at the
 University of Sheffield. My work sits where machine learning, dynamical
 systems and signal processing meet, mostly applied to human physiology
