@@ -145,3 +145,106 @@ blockquote {
 @media (prefers-reduced-motion: reduce) {
   body::before { animation: none; }
 }
+
+// ---- Simulations ----
+// Paste this block at the END of assets/main.scss.
+
+.sim {
+  margin: 2rem 0 2.5rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(201, 169, 110, 0.28);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sim-canvas {
+  display: block;
+  width: 100%;
+  border: none !important;
+  border-radius: 4px;
+  background: rgba(8, 12, 24, 0.55);
+}
+
+.sim-controls,
+.sim-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem 1.5rem;
+}
+.sim-controls { margin-bottom: 1rem; }
+.sim-buttons  { margin-top: 1rem; align-items: center; gap: 0.6rem; }
+
+.sim-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #8d95a8;
+}
+.sim-controls label.sim-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
+  padding-bottom: 0.3rem;
+}
+.sim-value { color: #c9a96e; letter-spacing: 0; }
+
+.sim select {
+  font: inherit;
+  font-size: 0.9rem;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #e8e4da;
+  background: #0e1424;
+  border: 1px solid rgba(201, 169, 110, 0.35);
+  border-radius: 4px;
+  padding: 0.35rem 0.6rem;
+}
+.sim input[type="range"] { width: 130px; accent-color: #c9a96e; }
+.sim input[type="checkbox"] { accent-color: #c9a96e; }
+
+.sim button {
+  font: inherit;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: #0e1424;
+  background: #c9a96e;
+  border: 1px solid #c9a96e;
+  border-radius: 4px;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  &:hover { background: #e2c891; border-color: #e2c891; }
+  &.sim-quiet, &.on {
+    color: #c9a96e;
+    background: transparent;
+    &:hover { color: #e2c891; background: rgba(201, 169, 110, 0.08); }
+  }
+}
+
+.sim-stat {
+  margin-left: auto;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: #8d95a8;
+}
+
+.sim-caption {
+  margin: 1rem 0 0.25rem;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.15rem;
+  font-style: italic;
+  color: #c8ccd6;
+}
+.sim-keys { margin: 0; font-size: 0.78rem; color: #8d95a8; }
+.sim kbd {
+  font-family: inherit;
+  font-size: 0.75rem;
+  padding: 0.05rem 0.4rem;
+  border: 1px solid rgba(201, 169, 110, 0.35);
+  border-radius: 3px;
+  color: #e8e4da;
+}
