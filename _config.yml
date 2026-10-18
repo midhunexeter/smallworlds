@@ -15,7 +15,7 @@
 # in the templates via {{ site.myvariable }}.
 title: Small Worlds
 description: Simple rules, surprising behavior. 
-baseurl: "/small-worlds"
+baseurl: "/smallworlds"
 url: "https://midhunexeter.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 
 
