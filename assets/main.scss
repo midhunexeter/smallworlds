@@ -250,18 +250,3 @@ blockquote {
 }
 
 .sim select:disabled { opacity: 0.4; cursor: not-allowed; }
-
-// ---- About page portrait ----
-.portrait {
-  float: right;
-  width: 160px;
-  height: 160px;
-  object-fit: cover;
-  margin: 0.3rem 0 1rem 1.75rem;
-  border-radius: 50% !important;
-  border: 1px solid rgba(201, 169, 110, 0.45) !important;
-  box-shadow: 0 0 0 6px rgba(201, 169, 110, 0.08);
-}
-@media (max-width: 600px) {
-  .portrait { float: none; display: block; margin: 0 auto 1.25rem; }
-}
